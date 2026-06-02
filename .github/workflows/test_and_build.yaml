@@ -14,21 +14,22 @@ jobs:
       image: returntocorp/semgrep
     if: (github.actor != 'dependabot[bot]')
     permissions:
-      security-events: write
+      security-events: write 
       actions: read
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Actualizado a v4
+        uses: actions/checkout@v4
 
       - name: Perform Semgrep Analysis
-        run: semgrep scan -q --sarif --config auto . > semgrep-results.sarif || true
+        run: |
+          semgrep scan --config auto --sarif . > semgrep-results.sarif || true
 
-      - name: Save SARIF results as artifact
-        uses: actions/upload-artifact@v4 
+      - name: Upload SARIF file to GitHub Security Alerts
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          name: semgrep-scan-results
-          path: semgrep-results.sarif
+          sarif_file: semgrep-results.sarif
+        if: always()
 
   sca_trivy:
     name: Análisis SCA (Trivy)
