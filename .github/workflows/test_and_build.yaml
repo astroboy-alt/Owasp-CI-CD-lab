@@ -65,3 +65,18 @@ jobs:
           scan-ref: '.'
           format: 'table' # Lo muestra en una tabla limpia en la consola de GitHub
           severity: 'HIGH,CRITICAL' # Enfocarse en lo más importante
+          
+  secret_detection:
+    name: Detección de Secretos (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Clonar todo el historial para buscar secretos antiguos
+
+      - name: Ejecutar Gitleaks de forma automática
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
