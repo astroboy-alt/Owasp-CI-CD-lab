@@ -33,33 +33,32 @@ jobs:
           path: semgrep-results.sarif
 
   sca_trivy:
-    name: Análisis SCA (Trivy)
+    name: Análisis SCA (Trivy - Vulnerabilidades en Dependencias)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      # Levantar Node.js es fundamental para que se reconozca el ecosistema de dependencias
+      # 1. Configuramos Node.js para reconstruir el entorno
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Instalamos absolutamente todas las dependencias del package.json para crear la carpeta node_modules
+      # 2. Instalamos los paquetes físicos locales para que Trivy los pueda auditar
       - name: Instalar dependencias del proyecto
         run: |
           npm install --legacy-peer-deps || true
 
-      # Ejecución recomendada por la documentación oficial cuando no se usa Code Scanning integrado
-      # Usamos una versión ultra estable de la acción oficial (0.20.0) para evitar fallos de inicialización
-      - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@0.20.0
+      # 3. CORRECCIÓN AQUÍ: Cambiado a @master para solucionar el error de la imagen image_2b2d05.png
+      - name: Ejecutar escaneo profundo de dependencias (SCA)
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           scan-ref: '.'
-          scanners: 'vuln' # Enfocado EXCLUSIVAMENTE en vulnerabilidades de dependencias (SCA)
-          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL' # Forzamos a que salgan TODAS las severidades
-          format: 'table' # Te genera la tabla detallada directamente en la consola de GitHub Actions
+          scanners: 'vuln'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          format: 'table'
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
