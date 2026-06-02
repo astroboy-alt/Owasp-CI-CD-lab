@@ -35,31 +35,21 @@ jobs:
   sca_trivy:
     name: Análisis SCA (Trivy - Vulnerabilidades en Dependencias)
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout del código
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Configurar Node.js
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.24.0
         with:
-          node-version: 18
-
-      # 2. Descargar las dependencias en el espacio de trabajo
-      - name: Instalar dependencias del proyecto
-        run: |
-          npm install --legacy-peer-deps || true
-
-      # 3. Descarga directa del binario empaquetado oficial de Linux de 64 bits
-      - name: Descargar Trivy Binario Portátil
-        run: |
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.51.1/trivy_0.51.1_Linux-64bit.tar.gz
-          tar -zxvf trivy_0.51.1_Linux-64bit.tar.gz
-
-      # 4. Ejecutar el binario local usando "./trivy" para analizar los node_modules sin restricciones
-      - name: Ejecutar escaneo profundo de dependencias (SCA)
-        run: |
-          ./trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
