@@ -45,6 +45,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: '.'
           format: 'table'
+          scanners: 'vuln,secret' 
           severity: 'HIGH,CRITICAL'
 
   secret_detection:
