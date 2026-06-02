@@ -54,8 +54,8 @@ jobs:
         with:
           fetch-depth: 0 
 
-      - name: Ejecutar Gitleaks de forma automática
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+      - name: Ejecutar Gitleaks en archivos locales
+        run: |
+          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz
+          tar -zxvf gitleaks_8.18.2_linux_x64.tar.gz
+          ./gitleaks detect --no-git --verbose || true
