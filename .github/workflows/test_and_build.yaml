@@ -48,13 +48,11 @@ jobs:
         run: |
           npm install --legacy-peer-deps || true
 
-      # CORRECCIÓN AQUÍ: Descargamos directamente el binario oficial para evitar errores de directorios en apt
-      - name: Instalar Trivy CLI de forma directa
-        run: |
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.49.1/trivy_0.49.1_Linux-64bit.tar.gz
-          tar -zxvf trivy_0.49.1_Linux-64bit.tar.gz
-          sudo mv trivy /usr/local/bin/
+      # Instalación oficial garantizada por el proveedor (Evita el error 404 de la imagen image_2b9d46.png)
+      - name: Instalar Trivy de forma nativa
+        uses: aquasecurity/setup-trivy@v0.2.0
 
+      # Ejecutamos el análisis sobre las dependencias reales instaladas en la raíz
       - name: Ejecutar escaneo profundo de CVEs
         run: |
           trivy fs --scanners vuln --severity HIGH,CRITICAL .
