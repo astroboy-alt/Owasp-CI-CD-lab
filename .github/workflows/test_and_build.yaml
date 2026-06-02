@@ -50,3 +50,18 @@ jobs:
         with:
           sarif_file: semgrep-results.sarif
         if: always()
+
+  sca_trivy:
+    name: Análisis SCA (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Ejecutar Trivy para buscar vulnerabilidades en dependencias
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs' # Escanea el sistema de archivos (package.json, etc.)
+          scan-ref: '.'
+          format: 'table' # Lo muestra en una tabla limpia en la consola de GitHub
+          severity: 'HIGH,CRITICAL' # Enfocarse en lo más importante
