@@ -39,14 +39,30 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Ejecutar Trivy para buscar vulnerabilidades en dependencias
-        uses: aquasecurity/trivy-action@master
+      # Instalar Node.js para poder descargar las dependencias reales del proyecto
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
-          scanners: 'vuln,secret' 
-          severity: 'HIGH,CRITICAL'
+          node-version: 18
+
+      # Instalamos las dependencias (con --legacy-peer-deps para evitar bloqueos en Juice Shop)
+      - name: Instalar dependencias del proyecto
+        run: |
+          npm install --legacy-peer-deps || true
+
+      # Instalamos Trivy directamente en el sistema para controlarlo al 100%
+      - name: Instalar Trivy CLI
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.min.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+
+      # Forzamos el escaneo directo buscando vulnerabilidades (vuln) y saltándonos los secretos si ya los hace Gitleaks
+      - name: Ejecutar escaneo profundo de CVEs
+        run: |
+          trivy fs --scanners vuln --severity HIGH,CRITICAL .
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
