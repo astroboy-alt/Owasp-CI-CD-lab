@@ -39,27 +39,26 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      # 1. Configuramos Node.js para reconstruir el entorno
+      # 1. Necesitamos Node.js para reconstruir el ecosistema
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # 2. Instalamos los paquetes físicos locales para que Trivy los pueda auditar
+      # 2. Descargamos físicamente las dependencias en la máquina virtual
       - name: Instalar dependencias del proyecto
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. CORRECCIÓN AQUÍ: Cambiado a @master para solucionar el error de la imagen image_2b2d05.png
-      - name: Ejecutar escaneo profundo de dependencias (SCA)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          scanners: 'vuln'
-          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
-          format: 'table'
+      # 3. Descargamos e instalamos el ejecutable nativo de Trivy directamente en el sistema de archivos local
+      - name: Instalar Trivy CLI de forma nativa
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.51.1
 
+      # 4. Forzamos el escaneo directo sobre la máquina virtual para que lea los node_modules reales
+      - name: Ejecutar escaneo profundo de dependencias (SCA)
+        run: |
+          trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
   secret_detection:
     name: Detección de Secretos (Gitleaks)
     runs-on: ubuntu-latest
