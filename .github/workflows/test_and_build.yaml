@@ -39,23 +39,27 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
+      # Levantar Node.js es fundamental para que se reconozca el ecosistema de dependencias
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      # Instalamos absolutamente todas las dependencias del package.json para crear la carpeta node_modules
       - name: Instalar dependencias del proyecto
         run: |
           npm install --legacy-peer-deps || true
 
-      # Instalación oficial garantizada por el proveedor (Evita el error 404 de la imagen image_2b9d46.png)
-      - name: Instalar Trivy de forma nativa
-        uses: aquasecurity/setup-trivy@v0.2.0
-
-      # Ejecutamos el análisis sobre las dependencias reales instaladas en la raíz
-      - name: Ejecutar escaneo profundo de CVEs
-        run: |
-          trivy fs --scanners vuln --severity HIGH,CRITICAL .
+      # Ejecución recomendada por la documentación oficial cuando no se usa Code Scanning integrado
+      # Usamos una versión ultra estable de la acción oficial (0.20.0) para evitar fallos de inicialización
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln' # Enfocado EXCLUSIVAMENTE en vulnerabilidades de dependencias (SCA)
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL' # Forzamos a que salgan TODAS las severidades
+          format: 'table' # Te genera la tabla detallada directamente en la consola de GitHub Actions
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
