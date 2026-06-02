@@ -45,22 +45,21 @@ jobs:
         with:
           node-version: 18
 
-      # 2. Descargar físicamente las dependencias en el espacio de trabajo
+      # 2. Descargar las dependencias en el espacio de trabajo
       - name: Instalar dependencias del proyecto
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. CORRECCIÓN DE PERMISOS: Instalamos Trivy en el directorio del usuario para evitar bloqueos
-      - name: Instalar Trivy CLI de forma nativa
+      # 3. Descarga directa del binario empaquetado oficial de Linux de 64 bits
+      - name: Descargar Trivy Binario Portátil
         run: |
-          mkdir -p $HOME/bin
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin v0.51.1
-          echo "$HOME/bin" >> $GITHUB_PATH
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.51.1/trivy_0.51.1_Linux-64bit.tar.gz
+          tar -zxvf trivy_0.51.1_Linux-64bit.tar.gz
 
-      # 4. Forzamos el escaneo directo apuntando a las dependencias reales instaladas
+      # 4. Ejecutar el binario local usando "./trivy" para analizar los node_modules sin restricciones
       - name: Ejecutar escaneo profundo de dependencias (SCA)
         run: |
-          trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
+          ./trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
