@@ -1,0 +1,5 @@
+# .gitleaksignore
+
+[rules]
+# Ignorar por completo la regla que confunde los campos "password" en el HTML del frontend
+id = hashicorp-tf-password
