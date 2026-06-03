@@ -51,13 +51,14 @@ jobs:
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. SOLUCIÓN AL 404: Usar la acción oficial de instalación nativa (agrega el binario al sistema sin aislarlo)
+      # 3. INSTALACIÓN INTACTA: Descargar el instalador oficial pero guardándolo en una ruta local del usuario
       - name: Instalar Trivy CLI de forma nativa
-        uses: aquasecurity/setup-trivy@v1
-        with:
-          cache: false # Evitamos conflictos de caché para una instalación limpia
+        run: |
+          mkdir -p $HOME/trivy-bin
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/trivy-bin v0.51.1
+          echo "$HOME/trivy-bin" >> $GITHUB_PATH
 
-      # 4. Ejecución nativa local llamando al comando 'trivy' directamente sobre la carpeta actual (.)
+      # 4. Ejecución llamando al comando 'trivy' que ya estará disponible en el PATH del sistema
       - name: Ejecutar escaneo profundo de dependencias (SCA)
         run: |
           trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
