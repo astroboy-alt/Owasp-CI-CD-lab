@@ -60,7 +60,7 @@ jobs:
           image-ref: 'nc-fttx-portal:scan'
           format: 'table'
           exit-code: '1'
-          severity: 'MEDIUM, CRITICAL'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
           output: 'trivy.txt' # Aquí se captura todo el output de la tabla
 
       # 4. Formato integrado: Tomar el archivo txt e inyectarlo dentro del Summary de GitHub
