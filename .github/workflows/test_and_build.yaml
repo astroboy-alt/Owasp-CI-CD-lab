@@ -40,16 +40,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.36.0
+      # 1. Configurar el entorno de Node.js necesario para mapear las dependencias
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH,MEDIUM'
+          node-version: 18
+
+      # 2. Descargar e instalar las librerías viejas físicamente en el disco virtual
+      - name: Instalar dependencias del proyecto
+        run: |
+          npm install --legacy-peer-deps || true
+
+      # 3. Descargar el binario portátil directo (evita problemas de contenedores y permisos)
+      - name: Descargar Trivy Binario Portátil
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.51.1/trivy_0.51.1_Linux-64bit.tar.gz
+          tar -zxvf trivy_0.51.1_Linux-64bit.tar.gz
+
+      # 4. Ejecución nativa local apuntando a la carpeta raíz actual (.)
+      - name: Ejecutar escaneo profundo de dependencias (SCA)
+        run: |
+          ./trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
