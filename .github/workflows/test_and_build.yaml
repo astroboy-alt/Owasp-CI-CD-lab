@@ -40,29 +40,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Configurar Node.js e instalar dependencias para que existan en el entorno
+      # 1. Configurar el entorno de Node.js necesario
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # 2. Descargamos físicamente las dependencias
+      # 2. Descargar e instalar las librerías físicamente en el disco virtual
       - name: Instalar dependencias del proyecto
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. Ejecutar Trivy usando la acción oficial pero configurada para dependencias (fs)
-      - name: Run Trivy scanner
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: 'fs'              # CORREGIDO: 'fs' en lugar de 'config' para buscar vulnerabilidades (SCA)
-          scan-ref: '.'                # Obliga a buscar en la raíz del proyecto actual
-          scanners: 'vuln'             # Se enfoca solo en fallos de librerías y software
-          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
-          format: 'table'
-          output: 'trivy.txt'          # Guarda el resultado en este archivo de texto
+      # 3. Descarga directa del binario portátil (URL VERIFICADA Y CORREGIDA)
+      - name: Descargar Trivy Binario Portátil
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.51.1/trivy_0.51.1_Linux-64bit.tar.gz
+          tar -zxvf trivy_0.51.1_Linux-64bit.tar.gz
 
-      # 4. Publicar la tabla de resultados de forma elegante en el resumen de GitHub Actions
+      # 4. Ejecución nativa local apuntando a la carpeta real (Guarda el resultado en trivy.txt)
+      - name: Ejecutar escaneo profundo de dependencias (SCA)
+        run: |
+          ./trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table --output trivy.txt .
+
+      # 5. Publicar la tabla real en el resumen de GitHub Actions
       - name: Publish Trivy Output to Summary
         run: |
           if [[ -s trivy.txt ]]; then
@@ -77,6 +77,7 @@ jobs:
               echo "</details>"
             } >> $GITHUB_STEP_SUMMARY
           fi
+
   secret_detection:
     name: Detección de Secretos (Gitleaks)
     runs-on: ubuntu-latest
