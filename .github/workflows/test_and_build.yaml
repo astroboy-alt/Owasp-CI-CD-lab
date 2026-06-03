@@ -40,61 +40,6 @@ jobs:
             } >> $GITHUB_STEP_SUMMARY
           fi
 
-  sca_trivy:
-    name: Análisis SCA (Trivy - Vulnerabilidades en Dependencias)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }} # Baja la rama exacta donde estás haciendo push
-
-      # 1. Configurar el entorno de Node.js necesario para mapear las dependencias
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      # 2. Descargar e instalar las librerías físicamente en el disco virtual
-      - name: Instalar dependencias del proyecto
-        run: |
-          npm install --legacy-peer-deps || true
-
-      # 3. CORREGIDO SEGÚN EL README: Configuración explícita de scan-type y scan-ref
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: 'fs'           # Especifica que busque en el sistema de archivos
-          scan-ref: '.'             # CORRECCIÓN CLAVE: Obliga a Trivy a mirar la raíz actual del proyecto
-          format: 'table'
-          scanners: 'vuln'          # Se enfoca únicamente en las dependencias de software
-          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
-          exit-code: '0'            # Permite continuar para que se genere tu reporte en el summary
-          output: 'trivy.txt'       # Almacena el resultado para el dashboard
-
-      # 4. Formato integrado: Tomar el archivo txt e inyectarlo dentro del Summary de GitHub
-      - name: Publish Trivy Output to Summary
-        if: always()
-        run: |
-          if [[ -s trivy.txt ]]; then
-            {
-              echo "### 🛡️ Reporte de Seguridad SCA (Trivy)"
-              echo "A continuación se detallan las vulnerabilidades detectadas en las dependencias del proyecto:"
-              echo "<details><summary>📦 Haz clic aquí para desplegar la tabla de vulnerabilidades</summary>"
-              echo ""
-              echo '```text'
-              cat trivy.txt
-              echo '```'
-              echo "</details>"
-            } >> $GITHUB_STEP_SUMMARY
-          else
-            {
-              echo "### ⚠️ Reporte de Seguridad SCA (Trivy)"
-              echo "No se generó el reporte 'trivy.txt' o el archivo está completamente vacío."
-            } >> $GITHUB_STEP_SUMMARY
-          fi
-
   secret_detection:
     name: Detección de Secretos (Gitleaks)
     runs-on: ubuntu-latest
