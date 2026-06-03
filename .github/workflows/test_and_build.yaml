@@ -32,7 +32,7 @@ jobs:
           name: reporte-semgrep-sast
           path: semgrep-results.sarif
 
-sca_trivy:
+  sca_trivy:
     name: Análisis SCA (Trivy - Vulnerabilidades en Dependencias)
     runs-on: ubuntu-latest
 
@@ -77,7 +77,6 @@ sca_trivy:
               echo "</details>"
             } >> $GITHUB_STEP_SUMMARY
           fi
-
   secret_detection:
     name: Detección de Secretos (Gitleaks)
     runs-on: ubuntu-latest
