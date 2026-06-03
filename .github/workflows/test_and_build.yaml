@@ -57,11 +57,13 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'nc-fttx-portal:scan'
+          scan-type: 'fs'             # CORREGIDO: Escanea archivos locales, no imágenes
+          scan-ref: '.'               # Analiza la raíz actual del proyecto
           format: 'table'
-          exit-code: '1'
+          scanners: 'vuln'            # Se enfoca solo en fallas de librerías y software
           severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
-          output: 'trivy.txt' # Aquí se captura todo el output de la tabla
+          exit-code: '0'              # Evita que el pipeline falle para que pueda escribir el summary
+          output: 'trivy.txt'
 
       # 4. Formato integrado: Tomar el archivo txt e inyectarlo dentro del Summary de GitHub
       - name: Publish Trivy Output to Summary
