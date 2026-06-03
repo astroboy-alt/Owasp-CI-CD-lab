@@ -40,7 +40,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }} # Se asegura de bajar la rama actual en la que haces push
+          ref: ${{ github.ref_name }} # Baja la rama exacta donde estás haciendo push
 
       # 1. Configurar el entorno de Node.js necesario para mapear las dependencias
       - name: Configurar Node.js
@@ -53,21 +53,21 @@ jobs:
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. Formato integrado: Ejecutar Trivy guardando la salida en formato tabla en un archivo txt
+      # 3. CORREGIDO SEGÚN EL README: Configuración explícita de scan-type y scan-ref
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: 'fs'             # CORREGIDO: Escanea archivos locales, no imágenes
-          scan-ref: '.'               # Analiza la raíz actual del proyecto
+          scan-type: 'fs'           # Especifica que busque en el sistema de archivos
+          scan-ref: '.'             # CORRECCIÓN CLAVE: Obliga a Trivy a mirar la raíz actual del proyecto
           format: 'table'
-          scanners: 'vuln'            # Se enfoca solo en fallas de librerías y software
+          scanners: 'vuln'          # Se enfoca únicamente en las dependencias de software
           severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
-          exit-code: '0'              # Evita que el pipeline falle para que pueda escribir el summary
-          output: 'trivy.txt'
+          exit-code: '0'            # Permite continuar para que se genere tu reporte en el summary
+          output: 'trivy.txt'       # Almacena el resultado para el dashboard
 
       # 4. Formato integrado: Tomar el archivo txt e inyectarlo dentro del Summary de GitHub
       - name: Publish Trivy Output to Summary
-        if: always() # Se ejecuta aunque Trivy encuentre fallas o marque advertencias
+        if: always()
         run: |
           if [[ -s trivy.txt ]]; then
             {
@@ -86,7 +86,6 @@ jobs:
               echo "No se generó el reporte 'trivy.txt' o el archivo está completamente vacío."
             } >> $GITHUB_STEP_SUMMARY
           fi
-
   secret_detection:
     name: Detección de Secretos (Gitleaks)
     runs-on: ubuntu-latest
