@@ -94,6 +94,7 @@ jobs:
               echo "No se generó el reporte 'trivy.txt' o el archivo está completamente vacío."
             } >> $GITHUB_STEP_SUMMARY
           fi
+
   secret_detection:
     name: Detección de Secretos (Gitleaks)
     runs-on: ubuntu-latest
@@ -101,23 +102,28 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4 
         with:
-          fetch-depth: 0 
+          fetch-depth: 0 # OBLIGATORIO: Baja el historial de commits para que Gitleaks analice de forma nativa y rápida
 
-      # Tu método original que sí detecta, guardando el resultado en gitleaks_results.txt
-      - name: Ejecutar Gitleaks en archivos locales
+      # Descargamos el ejecutable oficial
+      - name: Descargar e instalar Gitleaks
         run: |
           wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz
           tar -zxvf gitleaks_8.18.2_linux_x64.tar.gz
-          ./gitleaks detect --no-git --verbose > gitleaks_results.txt || true
 
-      # Inyectar tu reporte detectado en el Summary de GitHub
+      # EJECUCIÓN RECOMENDADA: Escaneo nativo por historial (sin --no-git) enfocado en tu repositorio
+      - name: Ejecutar Gitleaks nativo en el historial
+        run: |
+          # Usamos 'detect' de forma nativa. Es ultra rápido porque lee la base de datos de Git, ignorando node_modules
+          ./gitleaks detect --verbose > gitleaks_results.txt || true
+
+      # Inyectar el reporte en tu formato de Dashboard desplegable
       - name: Publicar resultados de Gitleaks en el Summary
         if: always()
         run: |
           if [[ -s gitleaks_results.txt ]]; then
             {
               echo "### 🔑 Reporte de Credenciales Expuestas (Gitleaks)"
-              echo "Se han detectado posibles llaves expuestas o contraseñas en los archivos locales:"
+              echo "Se han detectado posibles llaves expuestas, secretos o contraseñas en el historial del proyecto:"
               echo "<details><summary>🔓 Haz clic aquí para desplegar el reporte de secretos</summary>"
               echo ""
               echo '```text'
@@ -129,7 +135,7 @@ jobs:
           else
             {
               echo "### ✅ Reporte de Credenciales Expuestas (Gitleaks)"
-              echo "No se detectaron secretos expuestos en los archivos locales."
+              echo "No se detectaron secretos expuestos en el historial de la rama."
               echo ""
             } >> $GITHUB_STEP_SUMMARY
           fi
