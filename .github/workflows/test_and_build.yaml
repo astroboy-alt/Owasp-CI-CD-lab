@@ -51,16 +51,16 @@ jobs:
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. Descargar el binario portátil directo (evita problemas de contenedores y permisos)
-      - name: Descargar Trivy Binario Portátil
-        run: |
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.51.1/trivy_0.51.1_Linux-64bit.tar.gz
-          tar -zxvf trivy_0.51.1_Linux-64bit.tar.gz
+      # 3. SOLUCIÓN AL 404: Usar la acción oficial de instalación nativa (agrega el binario al sistema sin aislarlo)
+      - name: Instalar Trivy CLI de forma nativa
+        uses: aquasecurity/setup-trivy@v1
+        with:
+          cache: false # Evitamos conflictos de caché para una instalación limpia
 
-      # 4. Ejecución nativa local apuntando a la carpeta raíz actual (.)
+      # 4. Ejecución nativa local llamando al comando 'trivy' directamente sobre la carpeta actual (.)
       - name: Ejecutar escaneo profundo de dependencias (SCA)
         run: |
-          ./trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
+          trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
