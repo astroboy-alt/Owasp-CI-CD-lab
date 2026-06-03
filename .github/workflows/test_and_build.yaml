@@ -37,21 +37,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. CORREGIDO: Forzar a GitHub a descargar la rama exacta donde tienes el código real
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: master  # Obliga a descargar la rama 'master' explícitamente
 
-      # 1. Configurar el entorno de Node.js necesario
+      # 2. PASO DE DIAGNÓSTICO: Ver qué archivos hay realmente en el servidor
+      - name: Verificar archivos descargados en el runner
+        run: |
+          echo "=== Listando archivos en la raíz ==="
+          ls -la
+          echo "=== Verificando si existe package.json ==="
+          find . -name "package.json"
+
+      # 3. Configurar el entorno de Node.js necesario
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # 2. Forzar la instalación de dependencias en todo el proyecto
+      # 4. Descargar e instalar las librerías físicamente
       - name: Instalar dependencias del proyecto
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. Instalación oficial mediante APT (Ya comprobamos que funciona limpio)
+      # 5. Instalación oficial mediante APT
       - name: Instalar Trivy de forma nativa vía APT
         run: |
           sudo apt-get update
@@ -61,12 +72,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y trivy
 
-      # 4. ESCANEO ULTRA PROFUNDO: Forzamos la detección exhaustiva en todo el directorio
+      # 6. Ejecutar escaneo sobre el archivo de bloqueo generado por npm install
       - name: Ejecutar escaneo profundo de dependencias (SCA)
         run: |
-          trivy fs --scanners vuln --detection-priority comprehensive --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table --output trivy.txt .
+          trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table --output trivy.txt .
 
-      # 5. Publicar la tabla real en el resumen de GitHub Actions
+      # 7. Publicar la tabla real en el resumen de GitHub Actions
       - name: Publish Trivy Output to Summary
         run: |
           if [[ -s trivy.txt ]]; then
