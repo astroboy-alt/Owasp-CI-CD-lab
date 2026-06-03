@@ -95,35 +95,41 @@ jobs:
             } >> $GITHUB_STEP_SUMMARY
           fi
   secret_detection:
-    name: Escaneo de Secretos (Gitleaks)
+    name: Detección de Secretos (Gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout del código
+        uses: actions/checkout@v4 
         with:
-          fetch-depth: 0
+          fetch-depth: 0 
 
-      # Ejecutar Gitleaks e indicarle que imprima en consola/archivo textualmente
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: detect --verbose --redact > gitleaks_results.txt || true
+      # Tu método original que sí detecta, guardando el resultado en gitleaks_results.txt
+      - name: Ejecutar Gitleaks en archivos locales
+        run: |
+          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz
+          tar -zxvf gitleaks_8.18.2_linux_x64.tar.gz
+          ./gitleaks detect --no-git --verbose > gitleaks_results.txt || true
 
-      # Publicar en el Dashboard
-      - name: Publish Gitleaks Output to Summary
+      # Inyectar tu reporte detectado en el Summary de GitHub
+      - name: Publicar resultados de Gitleaks en el Summary
         if: always()
         run: |
           if [[ -s gitleaks_results.txt ]]; then
             {
               echo "### 🔑 Reporte de Credenciales Expuestas (Gitleaks)"
-              echo "Revisa si se han detectado contraseñas o API Keys en el historial de Git:"
+              echo "Se han detectado posibles llaves expuestas o contraseñas en los archivos locales:"
               echo "<details><summary>🔓 Haz clic aquí para desplegar el reporte de secretos</summary>"
               echo ""
               echo '```text'
               cat gitleaks_results.txt
               echo '```'
               echo "</details>"
+              echo ""
+            } >> $GITHUB_STEP_SUMMARY
+          else
+            {
+              echo "### ✅ Reporte de Credenciales Expuestas (Gitleaks)"
+              echo "No se detectaron secretos expuestos en los archivos locales."
+              echo ""
             } >> $GITHUB_STEP_SUMMARY
           fi
