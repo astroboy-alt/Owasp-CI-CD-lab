@@ -32,7 +32,7 @@ jobs:
           name: reporte-semgrep-sast
           path: semgrep-results.sarif
 
-  sca_trivy:
+sca_trivy:
     name: Análisis SCA (Trivy - Vulnerabilidades en Dependencias)
     runs-on: ubuntu-latest
 
@@ -40,28 +40,43 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Configurar el entorno de Node.js necesario para mapear las dependencias
+      # 1. Configurar Node.js e instalar dependencias para que existan en el entorno
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # 2. Descargar e instalar las librerías viejas físicamente en el disco virtual
+      # 2. Descargamos físicamente las dependencias
       - name: Instalar dependencias del proyecto
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. INSTALACIÓN INTACTA: Descargar el instalador oficial pero guardándolo en una ruta local del usuario
-      - name: Instalar Trivy CLI de forma nativa
-        run: |
-          mkdir -p $HOME/trivy-bin
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/trivy-bin v0.51.1
-          echo "$HOME/trivy-bin" >> $GITHUB_PATH
+      # 3. Ejecutar Trivy usando la acción oficial pero configurada para dependencias (fs)
+      - name: Run Trivy scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'              # CORREGIDO: 'fs' en lugar de 'config' para buscar vulnerabilidades (SCA)
+          scan-ref: '.'                # Obliga a buscar en la raíz del proyecto actual
+          scanners: 'vuln'             # Se enfoca solo en fallos de librerías y software
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          format: 'table'
+          output: 'trivy.txt'          # Guarda el resultado en este archivo de texto
 
-      # 4. Ejecución llamando al comando 'trivy' que ya estará disponible en el PATH del sistema
-      - name: Ejecutar escaneo profundo de dependencias (SCA)
+      # 4. Publicar la tabla de resultados de forma elegante en el resumen de GitHub Actions
+      - name: Publish Trivy Output to Summary
         run: |
-          trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table .
+          if [[ -s trivy.txt ]]; then
+            {
+              echo "### 🛡️ Reporte de Seguridad SCA (Trivy)"
+              echo "A continuación se detallan las vulnerabilidades detectadas en las dependencias del proyecto:"
+              echo "<details><summary>📦 Haz clic aquí para desplegar la tabla de vulnerabilidades</summary>"
+              echo ""
+              echo '```text'
+              cat trivy.txt
+              echo '```'
+              echo "</details>"
+            } >> $GITHUB_STEP_SUMMARY
+          fi
 
   secret_detection:
     name: Detección de Secretos (Gitleaks)
