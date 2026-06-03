@@ -10,27 +10,35 @@ jobs:
   semgrep_scan:
     name: Análisis SAST (Semgrep)
     runs-on: ubuntu-latest
-    container:
-      image: returntocorp/semgrep
-    if: (github.actor != 'dependabot[bot]')
-    permissions:
-      actions: write
-      contents: read
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Ejecuta el escaneo y guarda los resultados en el archivo semgrep-results.sarif
-      - name: Perform Semgrep Analysis
+      - name: Configurar entorno de Semgrep
         run: |
-          semgrep scan --config auto --sarif . > semgrep-results.sarif || true
+          pip install semgrep
 
-      # Agrupa el archivo en un .zip descargable compatible con GitHub v4
-      - name: Save SARIF results as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: reporte-semgrep-sast
-          path: semgrep-results.sarif
+      # Ejecutar Semgrep guardando el output legible en un archivo .txt
+      - name: Run Semgrep Scan
+        run: |
+          semgrep scan --config=auto --text --output=semgrep_results.txt || true
+
+      # Publicar en el Dashboard
+      - name: Publish Semgrep Output to Summary
+        if: always()
+        run: |
+          if [[ -s semgrep_results.txt ]]; then
+            {
+              echo "### 🔍 Reporte de Seguridad SAST (Semgrep)"
+              echo "A continuación se detallan las vulnerabilidades estáticas detectadas en el código fuente:"
+              echo "<details><summary>💻 Haz clic aquí para desplegar el análisis de código</summary>"
+              echo ""
+              echo '```text'
+              cat semgrep_results.txt
+              echo '```'
+              echo "</details>"
+            } >> $GITHUB_STEP_SUMMARY
+          fi
 
   sca_trivy:
     name: Análisis SCA (Trivy - Vulnerabilidades en Dependencias)
@@ -87,16 +95,35 @@ jobs:
             } >> $GITHUB_STEP_SUMMARY
           fi
   secret_detection:
-    name: Detección de Secretos (Gitleaks)
+    name: Escaneo de Secretos (Gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del código
-        uses: actions/checkout@v4 
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
 
-      - name: Ejecutar Gitleaks en archivos locales
+      # Ejecutar Gitleaks e indicarle que imprima en consola/archivo textualmente
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: detect --verbose --redact > gitleaks_results.txt || true
+
+      # Publicar en el Dashboard
+      - name: Publish Gitleaks Output to Summary
+        if: always()
         run: |
-          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz
-          tar -zxvf gitleaks_8.18.2_linux_x64.tar.gz
-          ./gitleaks detect --no-git --verbose || true
+          if [[ -s gitleaks_results.txt ]]; then
+            {
+              echo "### 🔑 Reporte de Credenciales Expuestas (Gitleaks)"
+              echo "Revisa si se han detectado contraseñas o API Keys en el historial de Git:"
+              echo "<details><summary>🔓 Haz clic aquí para desplegar el reporte de secretos</summary>"
+              echo ""
+              echo '```text'
+              cat gitleaks_results.txt
+              echo '```'
+              echo "</details>"
+            } >> $GITHUB_STEP_SUMMARY
+          fi
