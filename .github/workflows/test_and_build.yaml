@@ -55,14 +55,12 @@ jobs:
 
       # 3. Formato integrado: Ejecutar Trivy guardando la salida en formato tabla en un archivo txt
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
+          image-ref: 'nc-fttx-portal:scan'
           format: 'table'
-          scanners: 'vuln'
-          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
-          exit-code: '0'
+          exit-code: '1'
+          severity: 'MEDIUM, CRITICAL'
           output: 'trivy.txt' # Aquí se captura todo el output de la tabla
 
       # 4. Formato integrado: Tomar el archivo txt e inyectarlo dentro del Summary de GitHub
