@@ -1,5 +1,62 @@
 # .gitleaksignore
 
 [rules]
-# Ignorar por completo la regla que confunde los campos "password" en el HTML del frontend
+# 1. Elimina por completo los campos de formulario HTML ("password", "newPassword")
 id = hashicorp-tf-password
+
+[fingerprints]
+# 2. Ignorar todos los Tokens JWT de simulación en archivos de pruebas (.spec.ts y .test.ts)
+a3b087b8cc5850555c5742fc580d899172089430:frontend/src/app/app.guard.spec.ts:jwt:46
+496d1418138839c1046d9ebdacad64be46dd435d:frontend/src/app/app.guard.spec.ts:jwt:46
+a3b087b8cc5850555c5742fc580d899172089430:frontend/src/app/last-login-ip/last-login-ip.component.spec.ts:jwt:72
+496d1418138839c1046d9ebdacad64be46dd435d:frontend/src/app/last-login-ip/last-login-ip.component.spec.ts:jwt:72
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/user.test.ts:jwt:280
+73368d1d9e80f4e59c1aa85127a94ce6e842c428:test/server/currentUserSensitiveSpec.ts:jwt:17
+73368d1d9e80f4e59c1aa85127a94ce6e842c428:test/server/currentUserSpec.ts:jwt:36
+
+# 3. Ignorar contraseñas y llaves de prueba Mock (generic-api-key) en el frontend y carpetas de test
+a3b087b8cc5850555c5742fc580d899172089430:frontend/src/app/oauth/oauth.component.spec.ts:generic-api-key:90
+a3b087b8cc5850555c5742fc580d899172089430:frontend/src/app/oauth/oauth.component.spec.ts:generic-api-key:97
+496d1418138839c1046d9ebdacad64be46dd435d:frontend/src/app/oauth/oauth.component.spec.ts:generic-api-key:90
+496d1418138839c1046d9ebdacad64be46dd435d:frontend/src/app/oauth/oauth.component.spec.ts:generic-api-key:97
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:42
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:66
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:85
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:144
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:176
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:202
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:219
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:228
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:281
+d0ea92d40d9e229b3cf456ffa41428df59b614dc:test/api/2fa.test.ts:generic-api-key:308
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/basket.test.ts:generic-api-key:110
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/erasure-request.test.ts:generic-api-key:34
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/erasure-request.test.ts:generic-api-key:53
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/erasure-request.test.ts:generic-api-key:66
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/erasure-request.test.ts:generic-api-key:80
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/erasure-request.test.ts:generic-api-key:91
+1c8f56b050ed01bf5ce75acf9df3bda88e027dfa:test/api-supertest/erasure-request.test.ts:generic-api-key:103
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/data-export.test.ts:generic-api-key:25
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/data-export.test.ts:generic-api-key:42
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/data-export.test.ts:generic-api-key:62
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/feedback.test.ts:generic-api-key:117
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/feedback.test.ts:generic-api-key:143
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/login.test.ts:generic-api-key:147
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/login.test.ts:generic-api-key:245
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/login.test.ts:generic-api-key:267
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/product-review.test.ts:generic-api-key:101
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/product-review.test.ts:generic-api-key:115
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/user.test.ts:generic-api-key:240
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/user.test.ts:generic-api-key:289
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/user.test.ts:generic-api-key:304
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/user.test.ts:generic-api-key:318
+f1719904437bff718c1154533da9f5334f136c82:test/api-supertest/2fa.test.ts:generic-api-key:112
+f1719904437bff718c1154533da9f5334f136c82:test/api-supertest/2fa.test.ts:generic-api-key:262
+c2fd800469b52bea345d9d63c01ab564487e57b8:test/api/userApiSpec.ts:generic-api-key:315
+c2fd800469b52bea345d9d63c01ab564487e57b8:test/api/userApiSpec.ts:generic-api-key:338
+c2fd800469b52bea345d9d63c01ab564487e57b8:test/api/userApiSpec.ts:generic-api-key:359
+
+# 4. Ignorar llaves privadas simuladas de Web3 / Cripto
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/web3.test.ts:generic-api-key:48
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/web3.test.ts:generic-api-key:59
+1c8f56b050ed01bf6ce75acf9df3bda88e027dfa:test/api-supertest/web3.test.ts:generic-api-key:70
