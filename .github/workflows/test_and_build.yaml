@@ -51,16 +51,20 @@ jobs:
         run: |
           npm install --legacy-peer-deps || true
 
-      # 3. Descarga directa del binario portátil (URL VERIFICADA Y CORREGIDA)
-      - name: Descargar Trivy Binario Portátil
+      # 3. INSTALACIÓN DEFIINITIVA: Registro e instalación oficial mediante APT nativo de Ubuntu
+      - name: Instalar Trivy de forma nativa vía APT
         run: |
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.51.1/trivy_0.51.1_Linux-64bit.tar.gz
-          tar -zxvf trivy_0.51.1_Linux-64bit.tar.gz
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
 
-      # 4. Ejecución nativa local apuntando a la carpeta real (Guarda el resultado en trivy.txt)
+      # 4. Ejecución nativa llamando al comando 'trivy' instalado en el sistema
       - name: Ejecutar escaneo profundo de dependencias (SCA)
         run: |
-          ./trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table --output trivy.txt .
+          trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table --output trivy.txt .
 
       # 5. Publicar la tabla real en el resumen de GitHub Actions
       - name: Publish Trivy Output to Summary
