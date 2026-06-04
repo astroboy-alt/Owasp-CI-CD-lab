@@ -1,4 +1,4 @@
-name: Pipeline de Seguridad (Semgrep, Trivy y Gitleaks)
+name: Pipeline de Seguridad (Semgrep, Dependabot y Gitleaks)
 
 on:
   pull_request: {}
