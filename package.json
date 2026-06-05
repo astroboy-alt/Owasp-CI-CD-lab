@@ -194,7 +194,7 @@
     "@types/pdfkit": "^0.10.6",
     "@types/portscanner": "^2.1.4",
     "@types/pug": "^2.0.10",
-    "@types/sanitize-html": "^1.27.2",
+    "@types/sanitize-html": "^2.16.1",
     "@types/semver": "^7.5.8",
     "@types/sequelize": "^4.28.20",
     "@types/serve-index": "^1.9.4",
