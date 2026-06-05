@@ -39,7 +39,7 @@ Verificar instalación:
 ```bash
 docker compose version
 ```
-
+Si requiere instalar docker puede consultar la guia en el siguiente enlace: https://www.docker.com/
 ---
 
 ## Clonar el Repositorio
