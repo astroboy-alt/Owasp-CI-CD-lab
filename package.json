@@ -205,7 +205,7 @@
     "@types/supertest": "^7.2.0",
     "@types/swagger-ui-express": "^4.1.6",
     "@types/unzipper": "^0.10.10",
-    "chai": "^4.5.0",
+    "chai": "^6.2.2",
     "concurrently": "^5.3.0",
     "cypress": "^13.17.0",
     "eslint": "^9.39.4",
